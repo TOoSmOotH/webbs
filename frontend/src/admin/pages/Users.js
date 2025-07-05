@@ -50,11 +50,13 @@ export default function Users() {
     try {
       setLoading(true);
       const response = await axios.get('/api/admin/users');
-      setUsers(response.data);
+      // The API returns { users: [...], total, page, limit }
+      setUsers(response.data?.users || []);
       setError(null);
     } catch (error) {
       setError('Failed to load users');
       console.error('Error fetching users:', error);
+      setUsers([]);
     } finally {
       setLoading(false);
     }
@@ -96,10 +98,10 @@ export default function Users() {
     }
   };
 
-  const filteredUsers = users.filter(user =>
-    user.username.toLowerCase().includes(searchTerm.toLowerCase()) ||
+  const filteredUsers = Array.isArray(users) ? users.filter(user =>
+    user.username?.toLowerCase().includes(searchTerm.toLowerCase()) ||
     user.email?.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  ) : [];
 
   if (loading) {
     return (
