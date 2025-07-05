@@ -404,7 +404,7 @@ router.get('/boards', adminAuth, async (req, res) => {
       LEFT JOIN messages m ON b.id = m.board_id AND m.is_deleted = false
     `;
     
-    let countQuery = 'SELECT COUNT(*) FROM boards';
+    let countQuery = 'SELECT COUNT(*) FROM boards b';
     const params = [];
     let whereConditions = [];
     
