@@ -97,6 +97,18 @@ for i in {1..30}; do
     sleep 1
 done
 
+# Initialize admin tables if needed
+echo -e "${YELLOW}🔧 Initializing database tables...${NC}"
+cd backend && node scripts/init-admin-tables.js 2>/dev/null
+INIT_RESULT=$?
+cd ..
+
+if [ $INIT_RESULT -eq 0 ]; then
+    echo -e "${GREEN}✅ Database tables initialized${NC}"
+else
+    echo -e "${YELLOW}ℹ️  Database tables already initialized${NC}"
+fi
+
 # Start the application
 echo -e "${YELLOW}🌐 Starting WebBBS application...${NC}"
 echo ""
@@ -105,6 +117,7 @@ echo -e "${GREEN}║         WebBBS is starting up!                   ║${NC}"
 echo -e "${GREEN}║                                                  ║${NC}"
 echo -e "${GREEN}║  Frontend: http://localhost:3000                 ║${NC}"
 echo -e "${GREEN}║  Backend:  http://localhost:5000                 ║${NC}"
+echo -e "${GREEN}║  Admin Panel: http://localhost:3000/admin        ║${NC}"
 echo -e "${GREEN}║  Database: PostgreSQL on port 5432               ║${NC}"
 echo -e "${GREEN}║                                                  ║${NC}"
 echo -e "${GREEN}║  Press Ctrl+C to stop all services               ║${NC}"

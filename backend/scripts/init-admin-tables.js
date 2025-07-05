@@ -4,6 +4,33 @@ const db = require('../config/database');
 const bcrypt = require('bcrypt');
 
 async function initializeAdminTables() {
+  // Check if admin tables already exist
+  try {
+    const checkResult = await db.query(`
+      SELECT EXISTS (
+        SELECT FROM information_schema.tables 
+        WHERE table_name = 'system_settings'
+      ) as settings_exists,
+      EXISTS (
+        SELECT FROM information_schema.tables 
+        WHERE table_name = 'system_logs'
+      ) as logs_exists,
+      EXISTS (
+        SELECT FROM users 
+        WHERE role = 'super_admin'
+      ) as admin_exists
+    `);
+    
+    const { settings_exists, logs_exists, admin_exists } = checkResult.rows[0];
+    
+    if (settings_exists && logs_exists && admin_exists) {
+      // Tables already exist and admin user exists, exit silently
+      process.exit(1);
+    }
+  } catch (error) {
+    // If check fails, continue with initialization
+  }
+  
   console.log('Initializing admin tables...');
   
   try {

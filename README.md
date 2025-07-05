@@ -50,6 +50,12 @@ webbs/
   - Terminal commands: `files`, `areas`, `download`
 - **Database Integration**: PostgreSQL with full schema for users, messages, boards, and files
 - **Responsive Design**: Terminal adapts to different screen sizes while maintaining aspect ratio
+- **Modern Admin Interface**: Separate admin panel at /admin with Material-UI
+  - User management with role-based access control
+  - ANSI art upload and management system
+  - Visual menu builder with 80x25 grid editor
+  - Board and file administration
+  - Real-time monitoring dashboard
 
 ## Quick Start
 
@@ -68,7 +74,14 @@ This script will:
 2. Start PostgreSQL in a Docker container
 3. Install all dependencies (if needed)
 4. Create a `.env` file with default settings (if missing)
-5. Start both frontend and backend servers
+5. Initialize database tables and create admin user
+6. Start both frontend and backend servers
+
+### Default Admin Credentials
+After running `./start.sh`, a default admin account is created:
+- Username: `admin`
+- Password: `changeme123`
+- **Important**: Change this password immediately via the admin panel
 
 ### Manual Installation
 
