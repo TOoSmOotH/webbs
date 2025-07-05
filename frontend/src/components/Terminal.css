@@ -1,0 +1,106 @@
+.terminal-wrapper {
+  height: 100%;
+  width: 100%;
+  padding: 10px;
+  background-color: #000;
+  min-height: 400px;
+  box-sizing: border-box;
+  animation: fadeIn 0.3s ease-in;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.terminal-container {
+  height: 100%;
+  width: 100%;
+  background-color: #000;
+  border: 2px solid #00ff00;
+  border-radius: 5px;
+  padding: 15px;
+  overflow: hidden;
+  box-shadow: 
+    0 0 10px rgba(0, 255, 0, 0.5),
+    inset 0 0 10px rgba(0, 255, 0, 0.05);
+  position: relative;
+  min-height: 400px;
+  box-sizing: border-box;
+}
+
+.terminal-screen {
+  height: 100%;
+  width: 100%;
+  background-color: #000;
+  position: relative;
+  min-height: 350px;
+}
+
+/* Override xterm.js default styles */
+.terminal-wrapper .xterm {
+  padding: 0;
+  height: 100% !important;
+  width: 100% !important;
+}
+
+.terminal-wrapper .xterm .xterm-viewport {
+  background-color: transparent !important;
+}
+
+.terminal-wrapper .xterm .xterm-screen {
+  background-color: transparent !important;
+}
+
+/* Scanline effect - more subtle */
+.terminal-container::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(
+    transparent 50%, 
+    rgba(0, 255, 0, 0.015) 50%
+  );
+  background-size: 100% 4px;
+  pointer-events: none;
+  animation: scanlines 8s linear infinite;
+  z-index: 1;
+}
+
+@keyframes scanlines {
+  0% { transform: translateY(0); }
+  100% { transform: translateY(4px); }
+}
+
+/* Very subtle flicker effect */
+.terminal-container::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 255, 0, 0.01);
+  opacity: 0;
+  animation: flicker 4s infinite ease-in-out;
+  pointer-events: none;
+  z-index: 1;
+}
+
+@keyframes flicker {
+  0%, 100% { opacity: 0; }
+  50% { opacity: 0.5; }
+}
+
+/* Ensure terminal content is above effects */
+.terminal-wrapper .xterm {
+  position: relative;
+  z-index: 2;
+}

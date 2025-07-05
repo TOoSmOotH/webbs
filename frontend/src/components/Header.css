@@ -1,0 +1,64 @@
+.header {
+  background-color: #003300;
+  border-bottom: 2px solid #00ff00;
+  padding: 8px 15px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 14px;
+  color: #00ff00;
+  height: 40px;
+  box-shadow: 0 2px 5px rgba(0, 255, 0, 0.2);
+}
+
+.header-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.system-name {
+  font-weight: bold;
+  font-size: 16px;
+}
+
+.version {
+  font-size: 12px;
+  color: #66ff66;
+}
+
+.header-center {
+  display: flex;
+  align-items: center;
+}
+
+.connection-status {
+  font-size: 12px;
+}
+
+.status-connected {
+  color: #00ff00;
+}
+
+.status-connecting {
+  color: #ffff00;
+  animation: pulse 1s infinite;
+}
+
+.status-disconnected {
+  color: #ff0000;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+.header-right {
+  font-size: 12px;
+  color: #66ff66;
+}
+
+.current-time {
+  font-family: 'Courier New', monospace;
+}

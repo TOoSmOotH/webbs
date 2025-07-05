@@ -1,0 +1,22 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:15-alpine
+    container_name: webbs-postgres
+    environment:
+      POSTGRES_USER: webbs_user
+      POSTGRES_PASSWORD: webbs_pass
+      POSTGRES_DB: webbs
+    ports:
+      - "5432:5432"
+    volumes:
+      - webbs_postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U webbs_user -d webbs"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  webbs_postgres_data:

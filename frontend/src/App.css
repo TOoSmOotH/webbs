@@ -1,0 +1,70 @@
+.App {
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background-color: #000;
+  color: #00ff00;
+  font-family: 'Courier New', monospace;
+}
+
+.app-content {
+  flex: 1;
+  overflow: hidden;
+  position: relative;
+  display: flex;
+  min-height: 0;
+}
+
+.connection-screen {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100%;
+  background-color: #000;
+}
+
+.connection-message {
+  text-align: center;
+  color: #00ff00;
+}
+
+.ascii-art {
+  white-space: pre-line;
+  font-size: 12px;
+  line-height: 1.2;
+  margin-bottom: 20px;
+  color: #00ff00;
+}
+
+.status-message {
+  font-size: 16px;
+  animation: blink 1s infinite;
+}
+
+@keyframes blink {
+  0%, 50% { opacity: 1; }
+  51%, 100% { opacity: 0; }
+}
+
+/* Retro terminal styling */
+.terminal-container {
+  height: 100%;
+  width: 100%;
+  background-color: #000;
+  border: 2px solid #00ff00;
+  border-radius: 5px;
+  padding: 10px;
+  overflow: hidden;
+  box-shadow: 
+    0 0 20px #00ff00,
+    inset 0 0 20px rgba(0, 255, 0, 0.1);
+}
+
+.terminal-screen {
+  height: 100%;
+  width: 100%;
+  background-color: #000;
+  position: relative;
+}
+
+/* Removed duplicate animations - these are now in Terminal.css */
