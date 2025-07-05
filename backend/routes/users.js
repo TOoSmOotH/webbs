@@ -1,8 +1,26 @@
 const express = require('express');
 const bcrypt = require('bcrypt');
 const { v4: uuidv4 } = require('uuid');
+const jwt = require('jsonwebtoken');
 const router = express.Router();
 const db = require('../config/database');
+
+// JWT secret
+const JWT_SECRET = process.env.JWT_SECRET || 'your-super-secret-jwt-key-change-this-in-production';
+
+// Generate JWT token for regular users
+const generateUserToken = (user) => {
+  return jwt.sign(
+    {
+      id: user.id,
+      username: user.username,
+      is_admin: user.is_admin || false,
+      role: user.role || 'user'
+    },
+    JWT_SECRET,
+    { expiresIn: '7d' } // Regular users get 7 days
+  );
+};
 
 // Get user info
 router.get('/:id', async (req, res) => {
@@ -122,6 +140,9 @@ router.post('/login', async (req, res) => {
       [user.id, 'user_login', { username }]
     );
     
+    // Generate JWT token as well for API access
+    const jwtToken = generateUserToken(user);
+    
     res.json({
       success: true,
       message: 'Login successful',
@@ -129,12 +150,15 @@ router.post('/login', async (req, res) => {
         id: user.id,
         username: user.username,
         display_name: user.display_name,
-        user_level: user.user_level
+        user_level: user.user_level,
+        is_admin: user.is_admin,
+        role: user.role
       },
       session: {
         token: sessionToken,
         expires_at: expiresAt
-      }
+      },
+      jwt_token: jwtToken // Include JWT for API access
     });
   } catch (error) {
     console.error('Error logging in user:', error);

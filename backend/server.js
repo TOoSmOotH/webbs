@@ -11,6 +11,12 @@ const terminalRoutes = require('./routes/terminal');
 const userRoutes = require('./routes/users');
 const boardRoutes = require('./routes/boards');
 const fileRoutes = require('./routes/files');
+const adminRoutes = require('./routes/admin');
+const ansiArtRoutes = require('./routes/ansiArt');
+const menuRoutes = require('./routes/menus');
+const menuDisplayRoutes = require('./routes/menuDisplay');
+const { requestLogger, errorLogger } = require('./middleware/requestLogger');
+const logger = require('./utils/logger');
 
 const app = express();
 const server = http.createServer(app);
@@ -32,11 +38,18 @@ app.use(cors({
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
+// Request logging middleware
+app.use(requestLogger);
+
 // Routes
 app.use('/api/terminal', terminalRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/boards', boardRoutes);
 app.use('/api/files', fileRoutes);
+app.use('/api/admin', adminRoutes);
+app.use('/api/ansi-art', ansiArtRoutes);
+app.use('/api/menus', menuRoutes);
+app.use('/api/menu-display', menuDisplayRoutes);
 
 // Basic health check
 app.get('/api/health', (req, res) => {
@@ -80,13 +93,28 @@ app.set('io', io);
 app.set('activeSessions', activeSessions);
 
 // Error handling middleware
+app.use(errorLogger);
 app.use((err, req, res, next) => {
   console.error(err.stack);
   res.status(500).json({ error: 'Something went wrong!' });
 });
 
 // Start server
-server.listen(PORT, () => {
+server.listen(PORT, async () => {
   console.log(`Server running on port ${PORT}`);
   console.log(`Environment: ${process.env.NODE_ENV || 'development'}`);
+  
+  // Log server startup
+  await logger.info('Server started', {
+    port: PORT,
+    environment: process.env.NODE_ENV || 'development',
+    nodeVersion: process.version
+  });
+  
+  // Schedule log rotation if in production
+  if (process.env.NODE_ENV === 'production') {
+    setInterval(() => {
+      logger.rotateLogs(30).catch(err => console.error('Log rotation error:', err));
+    }, 24 * 60 * 60 * 1000); // Daily
+  }
 });

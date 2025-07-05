@@ -35,9 +35,22 @@ const initializeDatabase = async () => {
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         last_login TIMESTAMP,
         is_active BOOLEAN DEFAULT true,
-        user_level INTEGER DEFAULT 1
+        user_level INTEGER DEFAULT 1,
+        is_admin BOOLEAN DEFAULT false,
+        role VARCHAR(50) DEFAULT 'user'
       )
     `);
+
+    // Add columns if they don't exist (for existing databases)
+    await pool.query(`
+      ALTER TABLE users 
+      ADD COLUMN IF NOT EXISTS is_admin BOOLEAN DEFAULT false
+    `).catch(() => {});
+    
+    await pool.query(`
+      ALTER TABLE users 
+      ADD COLUMN IF NOT EXISTS role VARCHAR(50) DEFAULT 'user'
+    `).catch(() => {});
 
     // Sessions table
     await pool.query(`
@@ -174,6 +187,133 @@ const initializeDatabase = async () => {
       ('Media', 'Audio and video files', ARRAY['mp3', 'wav', 'ogg', 'mp4', 'avi', 'mkv', 'webm']),
       ('Documents', 'Text documents and e-books', ARRAY['txt', 'pdf', 'doc', 'docx', 'epub', 'mobi'])
       ON CONFLICT (name) DO NOTHING
+    `);
+
+    // ANSI art tables
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS ansi_art_categories (
+        id SERIAL PRIMARY KEY,
+        name VARCHAR(100) UNIQUE NOT NULL,
+        description TEXT,
+        display_order INTEGER DEFAULT 0,
+        is_active BOOLEAN DEFAULT true,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      )
+    `);
+
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS ansi_art (
+        id SERIAL PRIMARY KEY,
+        filename VARCHAR(255) NOT NULL,
+        original_filename VARCHAR(255) NOT NULL,
+        file_path VARCHAR(500) NOT NULL,
+        file_size BIGINT NOT NULL,
+        width INTEGER,
+        height INTEGER,
+        title VARCHAR(255),
+        artist VARCHAR(100),
+        group_name VARCHAR(100),
+        year INTEGER,
+        description TEXT,
+        category_id INTEGER REFERENCES ansi_art_categories(id) ON DELETE SET NULL,
+        uploaded_by INTEGER REFERENCES users(id) ON DELETE SET NULL,
+        view_count INTEGER DEFAULT 0,
+        is_active BOOLEAN DEFAULT true,
+        is_deleted BOOLEAN DEFAULT false,
+        sauce_info JSONB,
+        metadata JSONB,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      )
+    `);
+
+    // Insert default ANSI art categories
+    await pool.query(`
+      INSERT INTO ansi_art_categories (name, description, display_order) VALUES
+      ('Welcome Screens', 'Welcome and login screens', 1),
+      ('Main Menus', 'Main menu screens', 2),
+      ('Headers', 'Section headers and banners', 3),
+      ('Footers', 'Footer graphics', 4),
+      ('Backgrounds', 'Background patterns and screens', 5),
+      ('Logos', 'BBS and group logos', 6),
+      ('Transitions', 'Screen transition graphics', 7),
+      ('Info Screens', 'Information and help screens', 8),
+      ('User Lists', 'User listing decorations', 9),
+      ('File Lists', 'File area decorations', 10),
+      ('Message Areas', 'Message area headers', 11),
+      ('Special Events', 'Holiday and special event screens', 12),
+      ('ASCII Art', 'ASCII-based artwork', 13),
+      ('Misc', 'Miscellaneous ANSI art', 99)
+      ON CONFLICT (name) DO NOTHING
+    `);
+
+    // Menu builder tables
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS menus (
+        id SERIAL PRIMARY KEY,
+        name VARCHAR(100) UNIQUE NOT NULL,
+        description TEXT,
+        width INTEGER DEFAULT 80,
+        height INTEGER DEFAULT 25,
+        background_color INTEGER DEFAULT 0,
+        foreground_color INTEGER DEFAULT 7,
+        is_active BOOLEAN DEFAULT true,
+        is_main_menu BOOLEAN DEFAULT false,
+        created_by INTEGER REFERENCES users(id) ON DELETE SET NULL,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        metadata JSONB
+      )
+    `);
+
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS menu_items (
+        id SERIAL PRIMARY KEY,
+        menu_id INTEGER REFERENCES menus(id) ON DELETE CASCADE,
+        hotkey CHAR(1) NOT NULL,
+        label VARCHAR(100) NOT NULL,
+        x_position INTEGER NOT NULL,
+        y_position INTEGER NOT NULL,
+        width INTEGER,
+        height INTEGER,
+        action_type VARCHAR(50) NOT NULL, -- 'submenu', 'command', 'script', 'external'
+        action_data JSONB, -- stores command, submenu_id, script path, etc.
+        foreground_color INTEGER DEFAULT 7,
+        background_color INTEGER DEFAULT 0,
+        highlight_fg_color INTEGER DEFAULT 0,
+        highlight_bg_color INTEGER DEFAULT 7,
+        is_visible BOOLEAN DEFAULT true,
+        min_user_level INTEGER DEFAULT 1,
+        display_order INTEGER DEFAULT 0,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        UNIQUE(menu_id, hotkey)
+      )
+    `);
+
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS menu_layouts (
+        id SERIAL PRIMARY KEY,
+        menu_id INTEGER REFERENCES menus(id) ON DELETE CASCADE,
+        grid_data JSONB NOT NULL, -- stores the 80x25 grid with characters and colors
+        box_elements JSONB, -- stores box drawing elements positions
+        text_elements JSONB, -- stores text elements with positions
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      )
+    `);
+
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS menu_templates (
+        id SERIAL PRIMARY KEY,
+        name VARCHAR(100) UNIQUE NOT NULL,
+        description TEXT,
+        category VARCHAR(50),
+        template_data JSONB NOT NULL,
+        preview_image TEXT,
+        is_public BOOLEAN DEFAULT true,
+        created_by INTEGER REFERENCES users(id) ON DELETE SET NULL,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      )
     `);
 
     console.log('Database schema initialized');
