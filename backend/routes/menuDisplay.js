@@ -1,11 +1,11 @@
 const express = require('express');
 const router = express.Router();
 const db = require('../config/database');
-const { authenticateToken } = require('../middleware/auth');
+const { authenticate } = require('../middleware/auth');
 const { generateMenuAnsi, generateMenuItem, moveCursor, setColor, reset, clearScreen } = require('../utils/ansiUtils');
 
 // Get active menu for display (used by terminal)
-router.get('/active/:menuType', authenticateToken, async (req, res) => {
+router.get('/active/:menuType', authenticate, async (req, res) => {
   try {
     const menuType = req.params.menuType; // 'main', 'files', 'messages', etc.
     const userId = req.user.id;
@@ -66,7 +66,7 @@ router.get('/active/:menuType', authenticateToken, async (req, res) => {
 });
 
 // Handle menu input
-router.post('/input', authenticateToken, async (req, res) => {
+router.post('/input', authenticate, async (req, res) => {
   try {
     const { menuId, input } = req.body;
     const userId = req.user.id;
@@ -142,7 +142,7 @@ router.post('/input', authenticateToken, async (req, res) => {
 });
 
 // Get menu by ID (for navigation)
-router.get('/:id', authenticateToken, async (req, res) => {
+router.get('/:id', authenticate, async (req, res) => {
   try {
     const menuId = req.params.id;
     const userId = req.user.id;

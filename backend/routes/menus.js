@@ -1,8 +1,8 @@
 const express = require('express');
 const router = express.Router();
 const db = require('../config/database');
-const { authenticateToken } = require('../middleware/auth');
-const { requireAdmin } = require('../middleware/adminAuth');
+const { authenticate } = require('../middleware/auth');
+const { adminAuth } = require('../middleware/adminAuth');
 const { gridToAnsi, generateMenuAnsi, ansiToHtml } = require('../utils/ansiUtils');
 
 // ANSI color constants
@@ -56,7 +56,7 @@ const BOX_CHARS = {
 };
 
 // Get all menus
-router.get('/', authenticateToken, requireAdmin, async (req, res) => {
+router.get('/', adminAuth, async (req, res) => {
   try {
     const result = await db.query(`
       SELECT m.*, u.username as created_by_username,
@@ -79,7 +79,7 @@ router.get('/', authenticateToken, requireAdmin, async (req, res) => {
 });
 
 // Get a specific menu with all its data
-router.get('/:id', authenticateToken, requireAdmin, async (req, res) => {
+router.get('/:id', adminAuth, async (req, res) => {
   try {
     const menuId = req.params.id;
 
@@ -123,7 +123,7 @@ router.get('/:id', authenticateToken, requireAdmin, async (req, res) => {
 });
 
 // Create a new menu
-router.post('/', authenticateToken, requireAdmin, async (req, res) => {
+router.post('/', adminAuth, async (req, res) => {
   try {
     const { name, description, width, height, background_color, foreground_color, is_main_menu } = req.body;
     const userId = req.user.id;
@@ -155,7 +155,7 @@ router.post('/', authenticateToken, requireAdmin, async (req, res) => {
 });
 
 // Update menu
-router.put('/:id', authenticateToken, requireAdmin, async (req, res) => {
+router.put('/:id', adminAuth, async (req, res) => {
   try {
     const menuId = req.params.id;
     const { name, description, width, height, background_color, foreground_color, is_active, is_main_menu } = req.body;
@@ -190,7 +190,7 @@ router.put('/:id', authenticateToken, requireAdmin, async (req, res) => {
 });
 
 // Delete menu
-router.delete('/:id', authenticateToken, requireAdmin, async (req, res) => {
+router.delete('/:id', adminAuth, async (req, res) => {
   try {
     const menuId = req.params.id;
 
@@ -208,7 +208,7 @@ router.delete('/:id', authenticateToken, requireAdmin, async (req, res) => {
 });
 
 // Save menu layout
-router.post('/:id/layout', authenticateToken, requireAdmin, async (req, res) => {
+router.post('/:id/layout', adminAuth, async (req, res) => {
   try {
     const menuId = req.params.id;
     const { grid_data, box_elements, text_elements } = req.body;
@@ -245,7 +245,7 @@ router.post('/:id/layout', authenticateToken, requireAdmin, async (req, res) => 
 });
 
 // Menu items CRUD operations
-router.post('/:id/items', authenticateToken, requireAdmin, async (req, res) => {
+router.post('/:id/items', adminAuth, async (req, res) => {
   try {
     const menuId = req.params.id;
     const { hotkey, label, x_position, y_position, width, height, action_type, action_data,
@@ -272,7 +272,7 @@ router.post('/:id/items', authenticateToken, requireAdmin, async (req, res) => {
   }
 });
 
-router.put('/:menuId/items/:itemId', authenticateToken, requireAdmin, async (req, res) => {
+router.put('/:menuId/items/:itemId', adminAuth, async (req, res) => {
   try {
     const { menuId, itemId } = req.params;
     const updates = req.body;
@@ -313,7 +313,7 @@ router.put('/:menuId/items/:itemId', authenticateToken, requireAdmin, async (req
   }
 });
 
-router.delete('/:menuId/items/:itemId', authenticateToken, requireAdmin, async (req, res) => {
+router.delete('/:menuId/items/:itemId', adminAuth, async (req, res) => {
   try {
     const { menuId, itemId } = req.params;
 
@@ -334,7 +334,7 @@ router.delete('/:menuId/items/:itemId', authenticateToken, requireAdmin, async (
 });
 
 // Generate ANSI output
-router.get('/:id/ansi', authenticateToken, requireAdmin, async (req, res) => {
+router.get('/:id/ansi', adminAuth, async (req, res) => {
   try {
     const menuId = req.params.id;
 
@@ -377,7 +377,7 @@ router.get('/:id/ansi', authenticateToken, requireAdmin, async (req, res) => {
 });
 
 // Get menu templates
-router.get('/templates/list', authenticateToken, requireAdmin, async (req, res) => {
+router.get('/templates/list', adminAuth, async (req, res) => {
   try {
     const result = await db.query(`
       SELECT id, name, description, category, preview_image, created_at
@@ -397,7 +397,7 @@ router.get('/templates/list', authenticateToken, requireAdmin, async (req, res) 
 });
 
 // Save as template
-router.post('/:id/save-template', authenticateToken, requireAdmin, async (req, res) => {
+router.post('/:id/save-template', adminAuth, async (req, res) => {
   try {
     const menuId = req.params.id;
     const { name, description, category } = req.body;
