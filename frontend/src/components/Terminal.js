@@ -11,6 +11,7 @@ const Terminal = () => {
   const terminalRef = useRef(null);
   const xtermRef = useRef(null);
   const socketRef = useRef(null);
+  const fitAddonRef = useRef(null);
   const [currentCommand, setCurrentCommand] = useState('');
   const [isReady, setIsReady] = useState(false);
   const [sessionId] = useState(() => Math.random().toString(36).substring(7));
@@ -21,8 +22,23 @@ const Terminal = () => {
   useEffect(() => {
     if (!terminalRef.current) return;
 
-    // Initialize xterm.js
-    const term = new XTerm({
+    // Ensure the terminal container has dimensions
+    const container = terminalRef.current;
+    if (!container.offsetWidth || !container.offsetHeight) {
+      // If container has no dimensions, wait a bit and retry
+      const retryTimeout = setTimeout(() => {
+        if (container.offsetWidth && container.offsetHeight) {
+          initializeTerminal();
+        }
+      }, 100);
+      return () => clearTimeout(retryTimeout);
+    }
+
+    initializeTerminal();
+
+    function initializeTerminal() {
+      // Initialize xterm.js
+      const term = new XTerm({
       rows: 25,
       cols: 80,
       theme: {
@@ -66,6 +82,9 @@ const Terminal = () => {
     
     term.loadAddon(fitAddon);
     term.loadAddon(webLinksAddon);
+    
+    // Store fitAddon reference
+    fitAddonRef.current = fitAddon;
 
     // Open terminal
     term.open(terminalRef.current);
@@ -222,9 +241,9 @@ const Terminal = () => {
 
     // Handle window resize
     const handleResize = () => {
-      if (fitAddon && xtermRef.current) {
+      if (fitAddonRef.current && xtermRef.current) {
         try {
-          fitAddon.fit();
+          fitAddonRef.current.fit();
         } catch (error) {
           console.warn('Resize fit failed:', error);
         }
@@ -244,6 +263,7 @@ const Terminal = () => {
         xtermRef.current.dispose();
       }
     };
+    } // End of initializeTerminal function
   }, []);
 
   const loadWelcomeMessage = async () => {

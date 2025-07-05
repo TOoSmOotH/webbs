@@ -39,6 +39,7 @@
   background-color: #000;
   position: relative;
   min-height: 350px;
+  display: block;
 }
 
 /* Override xterm.js default styles */
