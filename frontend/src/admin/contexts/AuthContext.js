@@ -17,7 +17,7 @@ export const AuthProvider = ({ children }) => {
   const [error, setError] = useState(null);
 
   // Configure axios defaults
-  axios.defaults.baseURL = process.env.REACT_APP_API_URL || 'http://localhost:3001';
+  axios.defaults.baseURL = process.env.REACT_APP_API_URL || 'http://localhost:5000';
 
   useEffect(() => {
     // Check if user is already logged in
