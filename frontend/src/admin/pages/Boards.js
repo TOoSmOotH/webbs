@@ -50,11 +50,13 @@ export default function Boards() {
     try {
       setLoading(true);
       const response = await axios.get('/api/admin/boards');
-      setBoards(response.data);
+      // The API returns { boards: [...], total, page, limit }
+      setBoards(response.data?.boards || []);
       setError(null);
     } catch (error) {
       setError('Failed to load boards');
       console.error('Error fetching boards:', error);
+      setBoards([]);
     } finally {
       setLoading(false);
     }
@@ -161,7 +163,7 @@ export default function Boards() {
             </TableRow>
           </TableHead>
           <TableBody>
-            {boards.map((board) => (
+            {Array.isArray(boards) && boards.map((board) => (
               <TableRow key={board.id}>
                 <TableCell>
                   <Box sx={{ display: 'flex', alignItems: 'center' }}>
@@ -171,11 +173,11 @@ export default function Boards() {
                 </TableCell>
                 <TableCell>{board.description}</TableCell>
                 <TableCell>
-                  <Chip label={board.category} size="small" />
+                  <Chip label={board.category || 'General'} size="small" />
                 </TableCell>
-                <TableCell>{board.postCount || 0}</TableCell>
+                <TableCell>{board.message_count || 0}</TableCell>
                 <TableCell>
-                  {board.locked ? (
+                  {!board.is_active ? (
                     <Chip
                       label="Locked"
                       color="error"
