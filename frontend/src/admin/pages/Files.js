@@ -73,7 +73,8 @@ export default function Files() {
     try {
       setLoading(true);
       const response = await axios.get('/api/admin/files');
-      setFiles(response.data || []);
+      // The API returns { files: [...], pagination: {...} }
+      setFiles(response.data?.files || response.data || []);
       setError(null);
     } catch (error) {
       setError('Failed to load files');
@@ -100,13 +101,14 @@ export default function Files() {
     window.open(`/api/files/download/${file.id}`, '_blank');
   };
 
-  const filteredFiles = files.filter((file) => {
+  const filteredFiles = Array.isArray(files) ? files.filter((file) => {
     const matchesSearch =
       file.filename?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      file.original_filename?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       file.description?.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesCategory = categoryFilter === 'all' || file.category === categoryFilter;
     return matchesSearch && matchesCategory;
-  });
+  }) : [];
 
   if (loading) {
     return (
@@ -198,7 +200,7 @@ export default function Files() {
                     <Box sx={{ display: 'flex', alignItems: 'center' }}>
                       {getFileIcon(file.category)}
                       <Box sx={{ ml: 2 }}>
-                        <Typography variant="body2">{file.filename}</Typography>
+                        <Typography variant="body2">{file.original_filename || file.filename}</Typography>
                         {file.description && (
                           <Typography variant="caption" color="text.secondary">
                             {file.description}
@@ -209,20 +211,20 @@ export default function Files() {
                   </TableCell>
                   <TableCell>
                     <Chip
-                      label={file.category}
+                      label={file.area_name || file.category || 'Unknown'}
                       size="small"
                       color="primary"
                       variant="outlined"
                     />
                   </TableCell>
-                  <TableCell>{formatFileSize(file.size || 0)}</TableCell>
-                  <TableCell>{file.uploadedBy || 'Unknown'}</TableCell>
+                  <TableCell>{formatFileSize(file.file_size || 0)}</TableCell>
+                  <TableCell>{file.uploader_username || 'Unknown'}</TableCell>
                   <TableCell>
-                    {file.uploadDate
-                      ? new Date(file.uploadDate).toLocaleDateString()
+                    {file.created_at
+                      ? new Date(file.created_at).toLocaleDateString()
                       : 'Unknown'}
                   </TableCell>
-                  <TableCell>{file.downloads || 0}</TableCell>
+                  <TableCell>{file.download_count || 0}</TableCell>
                   <TableCell>
                     <Tooltip title="Preview">
                       <IconButton size="small" color="primary">
